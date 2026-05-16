@@ -1,14 +1,11 @@
 using UnityEngine;
 
-public class ShowUi : ButtenManager
+// ButtenManager 상속을 지우고 MonoBehaviour로 바꿉니다.
+public class ShowUi : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    // 유니티 인스펙터창에서 진짜 레벨이 오르는 버튼 매니저를 연결할 칸을 만듭니다.
+    [SerializeField] private ButtenManager realButtonManager;
 
-    // Update is called once per frame
     void Update()
     {
         ZFPrice();
@@ -16,16 +13,15 @@ public class ShowUi : ButtenManager
 
     public void ZFPrice()
     {
-        GameObject ItemSell = FindObject();
-        if (ItemSell == ItemSell.CompareTag("Zhuang Fangyi"))
+        // 연결된 버튼 매니저가 있고, 레벨이 1 이상일 때
+        if (realButtonManager != null && realButtonManager.currentLevel >= 1)
         {
-            PriceSystem.showprice(100);
-
+            // 진짜 레벨업이 일어나는 버튼 매니저의 레벨을 가져와서 곱합니다!
+            PriceSystem.showprice(realButtonManager.currentLevel * 100);
         }
-        else
+        else if (realButtonManager == null)
         {
-            Debug.Log("판매할 아이템이 없습니다.");
+            Debug.LogWarning("ShowUi: realButtonManager가 연결되지 않았습니다!");
         }
-         // 아이템의 가격을 100으로 설정합니다. 필요에 따라 조절할 수 있습니다.
     }
 }
