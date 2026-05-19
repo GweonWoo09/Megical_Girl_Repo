@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // 유니티 6 표준 텍스트 컴포넌트
+using TMPro; 
 
 #region 1. 코어 베이스 클래스 (이전 제공 코드 통합 및 최적화)
 namespace Gpm.Ui
@@ -54,7 +54,7 @@ public class ShopItemData : Gpm.Ui.InfiniteScrollData
     public int Price;
 }
 
-// ⭐ 바로 이 부분입니다! 하나의 파일 안에 이 클래스가 이미 정의되어 있어요.
+
 
 #endregion
 

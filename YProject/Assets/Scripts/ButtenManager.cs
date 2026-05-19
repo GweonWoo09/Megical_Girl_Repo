@@ -45,7 +45,7 @@ public class ButtenManager : GameManager
 
     public void OnClickSell()
     {
-        targetUI.SetActive(true);
+        SellUI.SetActive(true);
          
     }
 
@@ -59,7 +59,7 @@ public class ButtenManager : GameManager
             currentLevel = 1; // 아이템 레벨을 초기화합니다.
             successRate = 100f; // 강화 성공 확률을 초기화합니다.
             levelUpScript.LevelUpSystem(currentLevel); // UI 업데이트
-            targetUI.SetActive(false); // 판매 UI를 닫습니다.
+            SellUI.SetActive(false); // 판매 UI를 닫습니다.
         }
         else
         {
@@ -69,6 +69,12 @@ public class ButtenManager : GameManager
 
     public void OnClickSellCancel()
     {
-        targetUI.SetActive(false);
+        SellUI.SetActive(false);
     }
+
+    public void OnClickSetting()
+    {
+        SettingUI.SetActive(true);
+    }
+
 }

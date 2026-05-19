@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using UnityEngine.UI; // 👈 이 부분이 빠져서 Button 에러가 났던 것입니다!
+using UnityEngine.UI; 
 using TMPro;
 
 public class ShopItemUI : Gpm.Ui.InfiniteScrollItem
