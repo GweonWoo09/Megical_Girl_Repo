@@ -20,7 +20,7 @@ public class PriceSystem : MonoBehaviour
     public static void showprice(int getprice)
     {
         currnetprice = getprice;
-        UIManager.Instance.showcurrentPrice();
+        UIManager.Instance.showCurrentPrice();
     }
 
 }

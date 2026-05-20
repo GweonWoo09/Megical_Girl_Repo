@@ -7,13 +7,17 @@ public class GameManager : MonoBehaviour
 
     public int curLevel;
 
-    private CharacterBase character;
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private CharacterBase _character;
+
+    private void Awake()
+    {
+        curLevel = 1;
+    }
+
     void Start()
     {
         targetUI.SetActive(false);
-        character = GetComponent<CharacterBase>();
+        _character = GetComponent<CharacterBase>();
     }
 
     // Update is called once per frame
