@@ -1,24 +1,15 @@
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-public class ChangScene : MonoBehaviour
+/// <summary>
+/// [수정] 오타 수정: ChangScene → ChangeScene
+/// </summary>
+public class ChangeScene : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    [SerializeField] private string targetSceneName = "Second Scene";
 
     public void SceneChange()
     {
-        SceneManager.LoadScene("Second Scene");
+        SceneManager.LoadScene(targetSceneName);
     }
 }

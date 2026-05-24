@@ -1,34 +1,37 @@
-using System;
 using UnityEngine;
-using UnityEngine.UI; // ğŸ‘ˆ ì´ ë¶€ë¶„ì´ ë¹ ì ¸ì„œ Button ì—ëŸ¬ê°€ ë‚¬ë˜ ê²ƒì…ë‹ˆë‹¤!
+using UnityEngine.UI;
 using TMPro;
 
-public class ShopItemUI : Gpm.Ui.InfiniteScrollItem
+/// <summary>
+/// »óÁ¡ ½ºÅ©·ÑºäÀÇ °³º° ¾ÆÀÌÅÛ UI, 
+/// ShopManager°¡ µ¥ÀÌÅÍ ÁÖÀÔÇÏ¸é Ç¥½ÃÇØÁÜ
+/// </summary>
+public class ShopItemUI : MonoBehaviour
 {
-    [Header("UI References")]
-    public TextMeshProUGUI NameAndDescText; // "ì•„ì´í…œ: ì„¤ëª…" í…ìŠ¤íŠ¸
-    public Button BuyButton;
+    [SerializeField] private TextMeshProUGUI nameAndDescText;
+    [SerializeField] private TextMeshProUGUI priceText;
+    [SerializeField] private Button buyButton;
 
-    private ShopItemData myData;
+    private ShopItemData data;
+    private System.Action<ShopItemData> onBuyCallback;
 
     private void Awake()
     {
-        BuyButton.onClick.AddListener(OnBuyButtonClicked);
+        buyButton.onClick.AddListener(OnBuyClicked);
     }
 
-    public override void UpdateData(Gpm.Ui.InfiniteScrollData scrollData)
+    public void Setup(ShopItemData itemData, System.Action<ShopItemData> callback)
     {
-        base.UpdateData(scrollData);
-        myData = scrollData as ShopItemData;
+        data = itemData;
+        onBuyCallback = callback;
 
-        if (myData != null)
-        {
-            NameAndDescText.text = $"{myData.ItemName}: {myData.ItemDescription}";
-        }
+        nameAndDescText.text = $"{itemData.ItemName}: {itemData.ItemDescription}";
+        priceText.text = itemData.Price + "G";
+        gameObject.SetActive(true);
     }
 
-    private void OnBuyButtonClicked()
-    {
-        OnSelect();
-    }
+    public void Hide() => gameObject.SetActive(false);
+
+    private void OnBuyClicked() => onBuyCallback?.Invoke(data);
 }
+

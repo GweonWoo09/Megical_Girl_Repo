@@ -1,0 +1,77 @@
+using UnityEngine;
+
+/// <summary>
+/// 강화/판매 로직 담당, 
+/// 가격 계산은 LevelManager에게
+/// </summary>
+public class EnhanceManager : MonoBehaviour
+{
+    [Header("강화 설정")]
+    [Range(0f, 100f)]
+    public float successRate = 100f;    // 강화 성공 확률 (%)
+    public int currentLevel = 1;
+    private const float RATE_DECREASE = 2f;  // 강화 성공 시 확률 감소량
+    private const int SELL_PRICE_PER_LEVEL = 100; // 레벨당 판매가
+
+    [Header("참조")]
+    [SerializeField] private LevelManager levelManager;
+    [SerializeField] private GameObject sellConfirmUI; // 판매 확인 팝업
+
+    private void Start()
+    {
+        sellConfirmUI.SetActive(false);
+        levelManager.UpdateDisplay(currentLevel);
+    }
+
+    // ── 강화 버튼 ──────────────────────────────
+    public void OnClickUpgrade()
+    {
+        float roll = Random.Range(0f, 100f);
+
+        if (roll <= successRate)
+        {
+            currentLevel++;
+            successRate = Mathf.Max(0f, successRate - RATE_DECREASE); // 0% 아래로 내려가지 않음
+            Debug.Log($"강화 성공! Lv.{currentLevel} / 다음 성공 확률: {successRate}%");
+        }
+        else
+        {
+            Debug.Log("강화 실패!");
+            currentLevel = 1;
+            successRate = 100f;
+        }
+
+        levelManager.UpdateDisplay(currentLevel);
+    }
+
+    // ── 판매 버튼 (확인 팝업 열기) ──────────────
+    public void OnClickSell()
+    {
+        sellConfirmUI.SetActive(true);
+    }
+
+    // ── 판매 확정 ───────────────────────────────
+    public void OnClickSellConfirm()
+    {
+        int sellPrice = currentLevel * SELL_PRICE_PER_LEVEL;
+        GameDataManager.AddMoney(sellPrice);
+        Debug.Log($"아이템 판매 완료. 판매가: {sellPrice}");
+
+        ResetItem();
+        sellConfirmUI.SetActive(false);
+    }
+
+    // ── 판매 취소 ───────────────────────────────
+    public void OnClickSellCancel()
+    {
+        sellConfirmUI.SetActive(false);
+    }
+
+    // ── 내부: 아이템 초기화 ─────────────────────
+    private void ResetItem()
+    {
+        currentLevel = 1;
+        successRate = 100f;
+        levelManager.UpdateDisplay(currentLevel);
+    }
+}
