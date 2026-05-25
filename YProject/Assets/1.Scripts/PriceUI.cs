@@ -1,10 +1,14 @@
 using UnityEngine;
 using TMPro;
 
-public class PriceManager : MonoBehaviour
+/// <summary>
+/// 캐릭터 가격과 가지고있는 돈을 UI로 표시해줌
+/// </summary>
+public class PriceUI : MonoBehaviour
 {
-    public static PriceManager Instance { get; private set; }
+    public static PriceUI Instance { get; private set; }
 
+    [Header("UI")]
     [SerializeField] private TextMeshProUGUI moneyText;
     [SerializeField] private TextMeshProUGUI priceText;
 

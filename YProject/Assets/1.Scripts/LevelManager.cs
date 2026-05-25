@@ -2,9 +2,8 @@ using UnityEngine;
 using TMPro;
 
 /// <summary>
-/// [통합] LevelUp + ShowUi
-/// - 레벨 표시와 가격 계산을 한 곳에서 처리
-/// - ShowUi의 Update() 폴링 제거: EnhanceManager가 레벨 바뀔 때만 호출
+/// 레벨 표시와 가격 계산을 한 곳에서 처리, 
+/// EnhanceManager가 레벨 바뀔 때만 호출
 /// </summary>
 public class LevelManager : MonoBehaviour
 {
@@ -14,7 +13,7 @@ public class LevelManager : MonoBehaviour
 
     private const int PRICE_PER_LEVEL = 100;
 
-    // 레벨별 캐릭터 이름 (switch 대신 배열로 관리 → 추가 편함)
+    // 레벨별 캐릭터 이름
     private static readonly string[] CharacterNames =
     {
         "",             // index 0 (사용 안 함)
@@ -35,6 +34,7 @@ public class LevelManager : MonoBehaviour
     /// </summary>
     public void UpdateDisplay(int level)
     {
+        // UI 갱신
         // 레벨 텍스트
         if (levelText != null)
             levelText.text = "Level: " + level;
@@ -52,7 +52,7 @@ public class LevelManager : MonoBehaviour
         else
             Debug.LogError("NameText가 인스펙터에 연결되지 않았습니다!");
 
-        // 가격 갱신 (구 ShowUi.ZFPrice 로직 통합)
+        // 가격 갱신
         int price = level * PRICE_PER_LEVEL;
         GameDataManager.SetPrice(price);
     }
