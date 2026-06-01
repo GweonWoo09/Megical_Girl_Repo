@@ -1,6 +1,0 @@
-﻿<Solution>
-  <Project Path="gpm_ui_editor.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
-  <Project Path="gpm_ui_sample.csproj" />
-  <Project Path="gpm_ui.csproj" />
-</Solution>
