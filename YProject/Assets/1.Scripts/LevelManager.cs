@@ -1,5 +1,7 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
+
 
 /// <summary>
 /// 레벨 표시와 가격 계산을 한 곳에서 처리, 
@@ -53,7 +55,7 @@ public class LevelManager : MonoBehaviour
             Debug.LogError("NameText가 인스펙터에 연결되지 않았습니다!");
 
         // 가격 갱신
-        int price = level * PRICE_PER_LEVEL;
+        int price = (level - 1) * PRICE_PER_LEVEL;
         GameDataManager.SetPrice(price);
     }
 }

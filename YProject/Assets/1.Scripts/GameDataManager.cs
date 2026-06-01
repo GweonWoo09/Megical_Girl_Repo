@@ -30,7 +30,7 @@ public class GameDataManager : MonoBehaviour
 
     private void Start()
     {
-        Money = 0;
+        Money = 1000;
         Price = 0;
     }
 

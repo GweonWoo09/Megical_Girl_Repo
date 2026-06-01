@@ -10,17 +10,24 @@ public class EnhanceManager : MonoBehaviour
     [Range(0f, 100f)]
     public float successRate = 100f;    // 강화 성공 확률 (%)
     public int currentLevel = 1;
-    private const float RATE_DECREASE = 2f;  // 강화 성공 시 확률 감소량
+    private float RATE_DECREASE = 10f;  // 강화 성공 시 확률 감소량
     private const int SELL_PRICE_PER_LEVEL = 100; // 레벨당 판매가
+    private const int MIN_SELL_POPUP_LEVEL = 15; // 판매 확인 팝업을 여는 최소 레벨
 
     [Header("참조")]
     [SerializeField] private LevelManager levelManager;
     [SerializeField] private GameObject sellConfirmUI; // 판매 확인 팝업
+    [SerializeField] private GameObject btnCheatDebug; // 디버그용 버튼
 
     private void Start()
     {
+#if UNITY_EDITOR
+        sellConfirmUI.SetActive(true);
+#else
         sellConfirmUI.SetActive(false);
-        levelManager.UpdateDisplay(currentLevel);
+#endif
+        sellConfirmUI?.SetActive(false);
+        levelManager?.UpdateDisplay(currentLevel);
     }
 
     // ── 강화 버튼 ──────────────────────────────
@@ -31,7 +38,7 @@ public class EnhanceManager : MonoBehaviour
         if (roll <= successRate)
         {
             currentLevel++;
-            successRate = Mathf.Max(0f, successRate - RATE_DECREASE); // 0% 아래로 내려가지 않음
+            probablity();
             Debug.Log($"강화 성공! Lv.{currentLevel} / 다음 성공 확률: {successRate}%");
         }
         else
@@ -44,16 +51,30 @@ public class EnhanceManager : MonoBehaviour
         levelManager.UpdateDisplay(currentLevel);
     }
 
+    private void probablity()
+    {
+        if (currentLevel > 2 || currentLevel < 14) RATE_DECREASE = 5f;
+        
+        successRate = Mathf.Max(0f, successRate - RATE_DECREASE); // 0% 아래로 내려가지 않음
+    }
+
     // ── 판매 버튼 (확인 팝업 열기) ──────────────
     public void OnClickSell()
     {
-        sellConfirmUI.SetActive(true);
+        if(currentLevel >= MIN_SELL_POPUP_LEVEL)
+        {
+            sellConfirmUI.SetActive(true);
+        }
+        else
+        {
+            OnClickSellConfirm();
+        }
     }
 
     // ── 판매 확정 ───────────────────────────────
     public void OnClickSellConfirm()
     {
-        int sellPrice = currentLevel * SELL_PRICE_PER_LEVEL;
+        int sellPrice = (currentLevel - 1) * SELL_PRICE_PER_LEVEL;
         GameDataManager.AddMoney(sellPrice);
         Debug.Log($"아이템 판매 완료. 판매가: {sellPrice}");
 
@@ -73,5 +94,11 @@ public class EnhanceManager : MonoBehaviour
         currentLevel = 1;
         successRate = 100f;
         levelManager.UpdateDisplay(currentLevel);
+    }
+
+    // ── 디버그 ───────────────────────────────
+    public void OnClickCheatButton()
+    {
+        currentLevel++;
     }
 }

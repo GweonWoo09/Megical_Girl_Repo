@@ -2,10 +2,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-/// <summary>
-/// »óÁ¡ ½ºÅ©·ÑºäÀÇ °³º° ¾ÆÀÌÅÛ UI, 
-/// ShopManager°¡ µ¥ÀÌÅÍ ÁÖÀÔÇÏ¸é Ç¥½ÃÇØÁÜ
-/// </summary>
 public class ShopItemUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI nameAndDescText;
@@ -17,11 +13,27 @@ public class ShopItemUI : MonoBehaviour
 
     private void Awake()
     {
-        buyButton.onClick.AddListener(OnBuyClicked);
+        // buyButtonï¿½ï¿½ null Ã¼Å©
+        if (buyButton != null)
+            buyButton.onClick.AddListener(OnBuyClicked);
+        else
+            Debug.LogError($"[ShopItemUI] buyButtonï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½! ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {gameObject.name}");
     }
 
     public void Setup(ShopItemData itemData, System.Action<ShopItemData> callback)
     {
+        // ï¿½ï¿½ï¿½ ï¿½Êµå°¡ nullï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È®ï¿½Ï°ï¿½ ï¿½Î±×·ï¿½ ï¿½Ë·ï¿½ï¿½Ý´Ï´ï¿½
+        if (nameAndDescText == null)
+        {
+            Debug.LogError($"[ShopItemUI] nameAndDescTextï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½! ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ È®ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®: {gameObject.name}");
+            return;
+        }
+        if (priceText == null)
+        {
+            Debug.LogError($"[ShopItemUI] priceTextï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½! ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ È®ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®: {gameObject.name}");
+            return;
+        }
+
         data = itemData;
         onBuyCallback = callback;
 
@@ -34,4 +46,3 @@ public class ShopItemUI : MonoBehaviour
 
     private void OnBuyClicked() => onBuyCallback?.Invoke(data);
 }
-

@@ -4,13 +4,13 @@ using UnityEngine.UI;
 
 public class SettingUI : MonoBehaviour
 {
-    [Header("UI ÆÐ³Î")]
+    [Header("UI ï¿½Ð³ï¿½")]
     [SerializeField] private GameObject popSetting;
     [SerializeField] private Button openButton;
     [SerializeField] private Button closeButton;
     [SerializeField] private Slider volumeSlider;
 
-    [Header("¿Àµð¿À")]
+    [Header("ï¿½ï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private AudioMixer audioMixer;
 
     private const string VOLUME_KEY = "BgmVolume";
@@ -20,8 +20,7 @@ public class SettingUI : MonoBehaviour
     {
         openButton?.onClick.AddListener(OpenSetting);
         closeButton?.onClick.AddListener(SaveSettingData);
-
-        volumeSlider.onValueChanged.AddListener(ApplyVolume);
+        volumeSlider?.onValueChanged.AddListener(ApplyVolume);
     }
 
     private void Start()
@@ -35,14 +34,14 @@ public class SettingUI : MonoBehaviour
 
     public void OpenSetting() => popSetting.SetActive(true);
 
-    // ½½¶óÀÌ´õ°¡ ¿òÁ÷ÀÏ ¶§¸¶´Ù ½Ç½Ã°£À¸·Î ¿Àµð¿À¿¡ ¹Ý¿µ
+    // ï¿½ï¿½ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ç½Ã°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¿ï¿½
     private void ApplyVolume(float value)
     {
         if (audioMixer != null)
         {
-            // ½½¶óÀÌ´õ 0~1 °ª = -80dB~0dB
+            // ï¿½ï¿½ï¿½ï¿½ï¿½Ì´ï¿½ 0~1 ï¿½ï¿½ = -80dB~0dB
             float db = value > 0.0001f ? Mathf.Log10(value) * 20f : -80f;
-            audioMixer.SetFloat("BgmVolume", db); // AudioMixerÀÇ ÆÄ¶ó¹ÌÅÍ ÀÌ¸§°ú ¸ÂÃß±â
+            audioMixer.SetFloat("BgmVolume", db); // AudioMixerï¿½ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ß±ï¿½
         }
         else
         {
