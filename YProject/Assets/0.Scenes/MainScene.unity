@@ -2198,7 +2198,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnhanceManager
   levelManager: {fileID: 972184247}
   sellConfirmUI: {fileID: 139107222}
-  btnCheatDebug: {fileID: 1166917725}
+  btnDebug: {fileID: 1166917725}
 --- !u!1 &461607399
 GameObject:
   m_ObjectHideFlags: 0
@@ -4326,7 +4326,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 384510586}
         m_TargetAssemblyTypeName: EnhanceManager, Assembly-CSharp
-        m_MethodName: OnClickCheatButton
+        m_MethodName: OnClickDebugBtn
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -4620,8 +4620,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 723, y: 477.4}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 779.7, y: 477.4}
+  m_SizeDelta: {x: 316.73, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1299831130
 MonoBehaviour:
@@ -6357,8 +6357,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 723.01, y: 477.4}
-  m_SizeDelta: {x: 232.03, y: 100}
+  m_AnchoredPosition: {x: 772.53, y: 477.4}
+  m_SizeDelta: {x: 331.07, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1907506543
 MonoBehaviour:
@@ -6926,7 +6926,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB760\uBED0\uB044"
+  m_text: "\uB514\uBC84\uADF8"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 71f74ee8d2fddbc4da98c9cae145c1f2, type: 2}
   m_sharedMaterial: {fileID: 2992681553702240955, guid: 71f74ee8d2fddbc4da98c9cae145c1f2, type: 2}

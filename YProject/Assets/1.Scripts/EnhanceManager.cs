@@ -43,11 +43,12 @@ public class EnhanceManager : MonoBehaviour
 
     [Header("강화 설정")]
     private const int MIN_SELL_POPUP_LEVEL = 15; // 판매 확인 팝업을 여는 최소 레벨
+    private float buffEnhanceProb = 5f;
 
     [Header("참조")]
     [SerializeField] private LevelManager levelManager;
     [SerializeField] private GameObject sellConfirmUI; // 판매 확인 팝업
-    [SerializeField] private GameObject btnCheatDebug; // 디버그용 버튼
+    [SerializeField] private GameObject btnDebug; // 디버그용 버튼
 
     // ── 현재 레벨의 테이블 데이터를 가져오는 헬퍼 ──────────────────────────
     /// <summary>현재 레벨에서 강화 시도 시 적용될 데이터. 최대 레벨이면 null.</summary>
@@ -61,9 +62,9 @@ public class EnhanceManager : MonoBehaviour
     private void Start()
     {
 #if UNITY_EDITOR
-        btnCheatDebug.SetActive(true);
+        btnDebug.SetActive(true);
 #else
-        btnCheatDebug.SetActive(false);
+        btnDebug.SetActive(false);
 #endif
         sellConfirmUI.SetActive(false);
         levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
@@ -87,8 +88,12 @@ public class EnhanceManager : MonoBehaviour
         }
 
         float roll = Random.Range(0f, 100f);
-
-        if (roll <= CurrentSuccessRate)
+        if (roll <= buffEnhanceProb)
+        {
+            CurrentLevel += 2;
+            Debug.Log($"[강화 대성공] Lv.{CurrentLevel - 2} → Lv.{CurrentLevel}");
+        }
+        else if (roll <= CurrentSuccessRate)
         {
             CurrentLevel++;
             Debug.Log($"[강화 성공] Lv.{CurrentLevel - 1} → Lv.{CurrentLevel}");
@@ -136,7 +141,7 @@ public class EnhanceManager : MonoBehaviour
     }
 
     // ── 디버그 ───────────────────────────────
-    public void OnClickCheatButton()
+    public void OnClickDebugBtn()
     {
         CurrentLevel++;
         Debug.Log($"[강화 성공] Lv.{CurrentLevel - 1} → Lv.{CurrentLevel}");
