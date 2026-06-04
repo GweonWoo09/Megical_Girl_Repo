@@ -13,24 +13,24 @@ public class ShopItemUI : MonoBehaviour
 
     private void Awake()
     {
-        // buyButton�� null üũ
+        // null 판독하기
         if (buyButton != null)
             buyButton.onClick.AddListener(OnBuyClicked);
         else
-            Debug.LogError($"[ShopItemUI] buyButton�� ������� �ʾҽ��ϴ�! ������: {gameObject.name}");
+            Debug.LogError($"[ShopItemUI] buyButton이 연결되지 않았습니다! 프리팹: {gameObject.name}");
     }
 
     public void Setup(ShopItemData itemData, System.Action<ShopItemData> callback)
     {
-        // ��� �ʵ尡 null���� ��Ȯ�ϰ� �α׷� �˷��ݴϴ�
+        // null 판독하기
         if (nameAndDescText == null)
         {
-            Debug.LogError($"[ShopItemUI] nameAndDescText�� ������� �ʾҽ��ϴ�! ������ �ν����͸� Ȯ���ϼ���. ������Ʈ: {gameObject.name}");
+            Debug.LogError($"[ShopItemUI] nameAndDescText가 연결되지 않았습니다! 프리팹 인스펙터를 확인하세요. 오브젝트: {gameObject.name}");
             return;
         }
         if (priceText == null)
         {
-            Debug.LogError($"[ShopItemUI] priceText�� ������� �ʾҽ��ϴ�! ������ �ν����͸� Ȯ���ϼ���. ������Ʈ: {gameObject.name}");
+            Debug.LogError($"[ShopItemUI] priceText가 연결되지 않았습니다! 프리팹 인스펙터를 확인하세요. 오브젝트: {gameObject.name}");
             return;
         }
 

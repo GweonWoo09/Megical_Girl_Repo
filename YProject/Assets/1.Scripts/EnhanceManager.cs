@@ -1,3 +1,4 @@
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 /// <summary>
@@ -7,8 +8,8 @@ using UnityEngine;
 public class EnhanceManager : MonoBehaviour
 {
     // ── 강화 테이블 ──────────────────────────────────
-    // FromLevel | SuccessRate | EnhanceCost | SellPrice
-    // (해당 레벨) (강화 확률)   (강화 비용)  (판매 가격)
+    //  FromLevel | SuccessRate | EnhanceCost | SellPrice
+    // (해당 레벨)  (강화 확률)   (강화 비용)  (판매 가격)
     private static readonly EnhanceLevelData[] Table =
     {
         new() { FromLevel =  1, SuccessRate = 100f, EnhanceCost =    50, SellPrice =       0 },
@@ -37,17 +38,27 @@ public class EnhanceManager : MonoBehaviour
         new() { FromLevel = 24, SuccessRate =   3f, EnhanceCost = 35000, SellPrice = 2500000 },
     };
 
+    private static readonly ItemDropData[] ItemDropTable =
+    {
+        new() { RequiredLevel = 5, ItemName = "하급 아이템"},
+        new() { RequiredLevel = 10, ItemName = "중급 아이템"},
+        new() { RequiredLevel = 15, ItemName = "상급 아이템"},
+        new() { RequiredLevel = 20, ItemName = "최상급 아이템"},
+    };
+
     public const int MAX_LEVEL = 25; // 최대 레벨
 
     public int CurrentLevel { get; private set; } = 1; //현재 상태
 
     [Header("강화 설정")]
     private const int MIN_SELL_POPUP_LEVEL = 15; // 판매 확인 팝업을 여는 최소 레벨
-    private float buffEnhanceProb = 5f;
+    private const int MIN_ENHANCE_POPUP_LEVEL = 20; // 판매 확인 팝업을 여는 최소 레벨
+    private float buffEnhanceRate = 5f;
 
     [Header("참조")]
     [SerializeField] private LevelManager levelManager;
     [SerializeField] private GameObject sellConfirmUI; // 판매 확인 팝업
+    [SerializeField] private GameObject enhanceConfirmUI; // 강화 확인 팝업
     [SerializeField] private GameObject btnDebug; // 디버그용 버튼
 
     // ── 현재 레벨의 테이블 데이터를 가져오는 헬퍼 ──────────────────────────
@@ -67,11 +78,23 @@ public class EnhanceManager : MonoBehaviour
         btnDebug.SetActive(false);
 #endif
         sellConfirmUI.SetActive(false);
+        enhanceConfirmUI.SetActive(false);
         levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
     }
 
     // ── 강화 버튼 ───────────────────────────────────────────────────────────
+
     public void OnClickUpgrade()
+    {
+        if (CurrentLevel >= MIN_ENHANCE_POPUP_LEVEL)
+            enhanceConfirmUI.SetActive(true);
+        else
+            OnClickUpgradeConfirm();
+    }
+
+    // ── 강화 확정 ───────────────────────────────────────────────────────────
+
+    public void OnClickUpgradeConfirm()
     {
         // 최대 레벨 도달 시 강화 불가
         if (CurrentLevel >= MAX_LEVEL)
@@ -88,23 +111,83 @@ public class EnhanceManager : MonoBehaviour
         }
 
         float roll = Random.Range(0f, 100f);
-        if (roll <= buffEnhanceProb)
+
+        if (roll <= buffEnhanceRate)
         {
             CurrentLevel += 2;
             Debug.Log($"[강화 대성공] Lv.{CurrentLevel - 2} → Lv.{CurrentLevel}");
         }
         else if (roll <= CurrentSuccessRate)
         {
-            CurrentLevel++;
-            Debug.Log($"[강화 성공] Lv.{CurrentLevel - 1} → Lv.{CurrentLevel}");
+            OnEnhanceSuccess();
         }
         else
         {
-            Debug.Log($"[강화 실패] Lv.{CurrentLevel} → Lv.1");
-            CurrentLevel = 1;
+            OnEnhanceFail();
         }
 
         levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
+        enhanceConfirmUI.SetActive(false);
+    }
+
+    // ── 강화 취소 ───────────────────────────────────────────────────────────
+    public void OnClickUpgradeCancel()
+    {
+        enhanceConfirmUI.SetActive(false);
+    }
+
+    // ── 강화 성공 ───────────────────────────────────────────────────────────
+    private void OnEnhanceSuccess()
+    {
+        CurrentLevel++;
+        Debug.Log($"[강화 성공] → Lv.{CurrentLevel}");
+    }
+
+    // ── 강화 실패 ───────────────────────────────────────────────────────────
+    private void OnEnhanceFail()
+    {
+        int failedLevel = CurrentLevel;
+        Debug.Log($"[강화 실패] Lv.{failedLevel} → Lv.1");
+
+        // 실패 레벨에 해당하는 드랍 아이템이 있는지 확인 후 지급
+        TryDropItem(failedLevel);
+
+        CurrentLevel = 1;
+    }
+
+    // ── 드랍 처리 ───────────────────────────────────────────────────────────
+    /// <summary>
+    /// 실패한 레벨에서 받을 수 있는 가장 높은 조건의 드랍 아이템을 지급합니다.
+    /// 예: Lv.17 실패 → RequiredLevel 15 이하 중 가장 높은 항목 지급
+    /// </summary>
+    private void TryDropItem(int failedLevel)
+    {
+        ItemDropData? bestDrop = null;
+
+        foreach (var drop in ItemDropTable)
+        {
+            if (failedLevel >= drop.RequiredLevel)
+            {
+                // 조건을 만족하는 것 중 RequiredLevel이 가장 높은 항목 선택
+                if (bestDrop == null || drop.RequiredLevel > bestDrop.Value.RequiredLevel)
+                    bestDrop = drop;
+            }
+        }
+
+        if (bestDrop.HasValue)
+        {
+            GiveDropItem(bestDrop.Value.ItemName, failedLevel);
+        }
+    }
+
+    /// <summary>
+    /// 실제 아이템 지급 처리입니다.
+    /// 나중에 인벤토리 연동 시 이 메서드만 수정하면 됩니다.
+    /// </summary>
+    private void GiveDropItem(string itemName, int failedLevel)
+    {
+        // TODO: 인벤토리에 아이템 추가
+        Debug.Log($"[드랍] Lv.{failedLevel} 강화 실패 보상: '{itemName}' 획득!");
     }
 
     // ── 판매 버튼 (확인 팝업 열기) ──────────────────────────────────────────
@@ -112,7 +195,7 @@ public class EnhanceManager : MonoBehaviour
     {
         if (CurrentLevel >= MIN_SELL_POPUP_LEVEL)
             sellConfirmUI.SetActive(true);
-        else 
+        else
             OnClickSellConfirm();
     }
 
@@ -123,7 +206,7 @@ public class EnhanceManager : MonoBehaviour
         GameDataManager.AddMoney(price);
         Debug.Log($"[판매] 판매 완료. 판매가: {price}");
 
-        ResetItem();
+        ResetUI();
         sellConfirmUI.SetActive(false);
     }
 
@@ -133,8 +216,8 @@ public class EnhanceManager : MonoBehaviour
         sellConfirmUI.SetActive(false);
     }
 
-    // ── 내부: 아이템 초기화 ─────────────────────────────────────────────────
-    private void ResetItem()
+    // ── UI 갱신 ─────────────────────────────────────────────────────────────
+    private void ResetUI()
     {
         CurrentLevel = 1;
         levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
