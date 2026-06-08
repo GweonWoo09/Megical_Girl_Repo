@@ -1,15 +1,8 @@
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
-/// <summary>
-/// 강화/판매 로직 담당, 
-/// 가격 계산은 LevelManager에게
-/// </summary>
 public class EnhanceManager : MonoBehaviour
 {
-    // ── 강화 테이블 ──────────────────────────────────
-    //  FromLevel | SuccessRate | EnhanceCost | SellPrice
-    // (해당 레벨)  (강화 확률)   (강화 비용)  (판매 가격)
+    // ── 강화 테이블 ─────────────────────────────────────────────────────────
     private static readonly EnhanceLevelData[] Table =
     {
         new() { FromLevel =  1, SuccessRate = 100f, EnhanceCost =    50, SellPrice =       0 },
@@ -38,15 +31,12 @@ public class EnhanceManager : MonoBehaviour
         new() { FromLevel = 24, SuccessRate =   3f, EnhanceCost = 35000, SellPrice = 2500000 },
     };
 
-    private static readonly ItemDropData[] ItemDropTable =
-    {
-        new() { RequiredLevel = 5, ItemName = "하급 아이템"},
-        new() { RequiredLevel = 10, ItemName = "중급 아이템"},
-        new() { RequiredLevel = 15, ItemName = "상급 아이템"},
-        new() { RequiredLevel = 20, ItemName = "최상급 아이템"},
-    };
+    // ── 실패 드랍 테이블 ────────────────────────────────────────────────────
+    // ItemData ScriptableObject를 인스펙터에서 직접 연결합니다.
+    [Header("실패 드랍 테이블")]
+    [SerializeField] private FailDropData[] dropTable;
 
-    public const int MAX_LEVEL = 25; // 최대 레벨
+    public const int MAX_LEVEL = 25;
 
     public int CurrentLevel { get; private set; } = 1; //현재 상태
 
@@ -156,73 +146,41 @@ public class EnhanceManager : MonoBehaviour
     }
 
     // ── 드랍 처리 ───────────────────────────────────────────────────────────
-    /// <summary>
-    /// 실패한 레벨에서 받을 수 있는 가장 높은 조건의 드랍 아이템을 지급합니다.
-    /// 예: Lv.17 실패 → RequiredLevel 15 이하 중 가장 높은 항목 지급
-    /// </summary>
     private void TryDropItem(int failedLevel)
     {
-        ItemDropData? bestDrop = null;
+        FailDropData? bestDrop = null;
 
-        foreach (var drop in ItemDropTable)
+        foreach (var drop in dropTable)
         {
             if (failedLevel >= drop.RequiredLevel)
             {
-                // 조건을 만족하는 것 중 RequiredLevel이 가장 높은 항목 선택
                 if (bestDrop == null || drop.RequiredLevel > bestDrop.Value.RequiredLevel)
                     bestDrop = drop;
             }
         }
 
-        if (bestDrop.HasValue)
+        if (bestDrop.HasValue && bestDrop.Value.DropItem != null)
         {
-            GiveDropItem(bestDrop.Value.ItemName, failedLevel);
+            // ItemManager를 통해 인벤토리에 추가
+            ItemManager.Instance.AddItem(bestDrop.Value.DropItem, bestDrop.Value.DropAmount);
         }
     }
 
-    /// <summary>
-    /// 실제 아이템 지급 처리입니다.
-    /// 나중에 인벤토리 연동 시 이 메서드만 수정하면 됩니다.
-    /// </summary>
-    private void GiveDropItem(string itemName, int failedLevel)
-    {
-        // TODO: 인벤토리에 아이템 추가
-        Debug.Log($"[드랍] Lv.{failedLevel} 강화 실패 보상: '{itemName}' 획득!");
-    }
+    // ── 판매 ────────────────────────────────────────────────────────────────
+    public void OnClickSell() => sellConfirmUI.SetActive(true);
+    public void OnClickSellCancel() => sellConfirmUI.SetActive(false);
 
-    // ── 판매 버튼 (확인 팝업 열기) ──────────────────────────────────────────
-    public void OnClickSell()
-    {
-        if (CurrentLevel >= MIN_SELL_POPUP_LEVEL)
-            sellConfirmUI.SetActive(true);
-        else
-            OnClickSellConfirm();
-    }
-
-    // ── 판매 확정 ───────────────────────────────────────────────────────────
     public void OnClickSellConfirm()
     {
-        int price = CurrentSellPrice;
-        GameDataManager.AddMoney(price);
-        Debug.Log($"[판매] 판매 완료. 판매가: {price}");
-
-        ResetUI();
-        sellConfirmUI.SetActive(false);
-    }
-
-    // ── 판매 취소 ───────────────────────────────────────────────────────────
-    public void OnClickSellCancel()
-    {
-        sellConfirmUI.SetActive(false);
-    }
-
-    // ── UI 갱신 ─────────────────────────────────────────────────────────────
-    private void ResetUI()
-    {
+        GameDataManager.AddMoney(CurrentSellPrice);
+        Debug.Log($"[판매] 판매가: {CurrentSellPrice}");
         CurrentLevel = 1;
-        levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
+        sellConfirmUI.SetActive(false);
+        RefreshDisplay();
     }
 
+    private void RefreshDisplay() =>
+        levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
     // ── 디버그 ───────────────────────────────
     public void OnClickDebugBtn()
     {

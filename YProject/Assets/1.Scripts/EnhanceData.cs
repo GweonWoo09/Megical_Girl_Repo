@@ -1,21 +1,23 @@
-/// <summary>
-/// 강화 테이블의 한 행을 나타내는 데이터 구조체
-/// </summary>
+using UnityEngine;
+
+/// <summary>강화 테이블 한 행의 데이터입니다.</summary>
 [System.Serializable]
 public struct EnhanceLevelData
 {
-    public int   FromLevel;      // 현재 레벨
-    public float SuccessRate;    // 강화 성공 확률 (%)
-    public int   EnhanceCost;    // 강화 비용
-    public int   SellPrice;      // 판매 가격
+    public int FromLevel;
+    public float SuccessRate;
+    public int EnhanceCost;
+    public int SellPrice;
 }
 
 /// <summary>
-/// 강화 실패 시 드랍 조건과 아이템 이름 구조체
+/// 강화 실패 시 드랍 조건과 지급할 ItemData를 정의합니다.
+/// ItemData는 ScriptableObject이므로 인스펙터에서 직접 연결합니다.
 /// </summary>
 [System.Serializable]
-public struct ItemDropData
+public struct FailDropData
 {
-    public int RequiredLevel; // 이 레벨 이상에서 실패 시 드랍
-    public string ItemName;
+    public int RequiredLevel; // 이 레벨 이상 실패 시 드랍
+    public ItemData DropItem;      // 지급할 아이템 (ScriptableObject)
+    public int DropAmount;    // 지급 수량
 }

@@ -1,12 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using UnityEditor;
 
-/// <summary>
-/// 상점 UI 관리
-/// </summary>
 public class ShopUI : MonoBehaviour
 {
     [Header("UI 패널")]
@@ -18,6 +13,7 @@ public class ShopUI : MonoBehaviour
     [SerializeField] private Transform contentParent;
     [SerializeField] private ShopItemUI itemPrefab;
 
+    // ShopItemData에 ItemData 참조를 추가하여 인벤토리 연동
     private readonly List<ShopItemData> itemDataList = new();
     private readonly List<ShopItemUI> pooledItems = new();
 
@@ -25,7 +21,6 @@ public class ShopUI : MonoBehaviour
     {
         openButton?.onClick.AddListener(OpenShop);
         closeButton?.onClick.AddListener(CloseShop);
-
         LoadItemData();
         CloseShop();
     }
@@ -34,12 +29,14 @@ public class ShopUI : MonoBehaviour
     {
         itemDataList.Clear();
 
-        // 실제 프로젝트에서는 ScriptableObject나 JSON으로 교체하세요
+        // ShopItemData.LinkedItem에 ItemData ScriptableObject를 연결하면
+        // 구매 시 자동으로 인벤토리에 추가됨
         itemDataList.Add(new ShopItemData
         {
             ItemName = "방지권",
             ItemDescription = "강화 실패 시 파괴를 1회 방지합니다.",
-            Price = 100
+            Price = 100,
+            LinkedItem = null // 인스펙터 연동 or 코드에서 직접 할당
         });
 
         for (int i = 1; i <= 10; i++)
@@ -48,7 +45,8 @@ public class ShopUI : MonoBehaviour
             {
                 ItemName = $"일반 아이템 {i}",
                 ItemDescription = "테스트용 아이템입니다.",
-                Price = i * 10
+                Price = i * 10,
+                LinkedItem = null
             });
         }
     }
@@ -63,40 +61,36 @@ public class ShopUI : MonoBehaviour
 
     private void RefreshScrollView()
     {
-        // 풀에서 재사용하거나 새로 생성
         for (int i = 0; i < itemDataList.Count; i++)
         {
-            ShopItemUI ui = (i < pooledItems.Count)
-                ? pooledItems[i]
-                : CreatePooledItem();
-
+            ShopItemUI ui = (i < pooledItems.Count) ? pooledItems[i] : CreatePooledItem();
             ui.Setup(itemDataList[i], OnItemPurchased);
         }
-
-        // 남은 풀 아이템 숨기기
         for (int i = itemDataList.Count; i < pooledItems.Count; i++)
             pooledItems[i].Hide();
     }
 
     private ShopItemUI CreatePooledItem()
     {
-        ShopItemUI ui = Instantiate(itemPrefab, contentParent);
+        var ui = Instantiate(itemPrefab, contentParent);
         pooledItems.Add(ui);
         return ui;
     }
 
     private void OnItemPurchased(ShopItemData item)
     {
-        // GameDataManager로 재화 차감 (잔액 부족 시 자동으로 false 반환)
-        if (GameDataManager.SpendMoney(item.Price))
+        if (!GameDataManager.SpendMoney(item.Price))
         {
-            Debug.Log($"[상점] '{item.ItemName}' 구매 완료!");
-            // TODO: 인벤토리에 아이템 추가
+            Debug.Log($"[상점] 재화 부족. 필요: {item.Price}G");
+            return;
         }
+
+        Debug.Log($"[상점] '{item.ItemName}' 구매 완료!");
+
+        // LinkedItem이 연결되어 있으면 인벤토리에 추가
+        if (item.LinkedItem != null)
+            ItemManager.Instance.AddItem(item.LinkedItem);
         else
-        {
-            Debug.Log($"[상점] 재화가 부족합니다. (필요: {item.Price}G)");
-            // TODO: 재화 부족 UI 표시
-        }
+            Debug.LogWarning($"[상점] '{item.ItemName}'에 LinkedItem이 연결되지 않았습니다.");
     }
 }
