@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ProbUpItem
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: "\uD655\uB960 \uC99D\uAC00\uAD8C"
-  description: 
+  description: "\uC774\uBC88 \uAC15\uD654\uC5D0 \uB300\uC131\uACF5\uC774 \uB098\uC62C
+    \uD655\uB960\uC774 \uB192\uC544\uC9D1\uB2C8\uB2E4."
   icon: {fileID: 0}
   itemType: 1

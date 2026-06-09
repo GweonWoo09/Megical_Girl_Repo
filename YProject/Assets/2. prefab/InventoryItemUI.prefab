@@ -110,8 +110,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d38a6360b16865448be63a148372a622, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemUI
-  itemNameAndDescText: {fileID: 1419058521103333967}
-  itemCountText: {fileID: 5340468751433896504}
+  iconImage: {fileID: 0}
+  nameDescText: {fileID: 1419058521103333967}
+  countText: {fileID: 5340468751433896504}
 --- !u!1 &3250144422089976366
 GameObject:
   m_ObjectHideFlags: 0
@@ -177,7 +178,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "00 \uAC1C"
+  m_text: x00
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 71f74ee8d2fddbc4da98c9cae145c1f2, type: 2}
   m_sharedMaterial: {fileID: 2992681553702240955, guid: 71f74ee8d2fddbc4da98c9cae145c1f2, type: 2}
@@ -283,8 +284,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -155, y: 0}
-  m_SizeDelta: {x: -310, y: 0}
+  m_AnchoredPosition: {x: -92.87848, y: 0}
+  m_SizeDelta: {x: -185.7567, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7345978840503268753
 CanvasRenderer:
