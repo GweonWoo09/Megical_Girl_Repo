@@ -3,7 +3,7 @@ using UnityEngine;
 public class EnhanceManager : MonoBehaviour
 {
     // ── 강화 테이블 ─────────────────────────────────────────────────────────
-    private static readonly EnhanceLevelData[] Table =
+    private static readonly EnhanceLevelData[] enhanceTable =
     {
         new() { FromLevel =  1, SuccessRate = 100f, EnhanceCost =    50, SellPrice =       0 },
         new() { FromLevel =  2, SuccessRate =  90f, EnhanceCost =    80, SellPrice =      50 },
@@ -32,116 +32,108 @@ public class EnhanceManager : MonoBehaviour
     };
 
     // ── 실패 드랍 테이블 ────────────────────────────────────────────────────
-    // ItemData ScriptableObject를 인스펙터에서 직접 연결합니다.
     [Header("실패 드랍 테이블")]
     [SerializeField] private FailDropData[] dropTable;
 
     public const int MAX_LEVEL = 25;
-
-    public int CurrentLevel { get; private set; } = 1; //현재 상태
-
-    [Header("강화 설정")]
-    private const int MIN_SELL_POPUP_LEVEL = 15; // 판매 확인 팝업을 여는 최소 레벨
-    private const int MIN_ENHANCE_POPUP_LEVEL = 20; // 판매 확인 팝업을 여는 최소 레벨
-    private float buffEnhanceRate = 5f;
+    public int CurrentLevel { get; private set; } = 1;
 
     [Header("참조")]
     [SerializeField] private LevelManager levelManager;
-    [SerializeField] private GameObject sellConfirmUI; // 판매 확인 팝업
-    [SerializeField] private GameObject enhanceConfirmUI; // 강화 확인 팝업
-    [SerializeField] private GameObject btnDebug; // 디버그용 버튼
+    [SerializeField] private GameObject sellConfirmUI;
 
-    // ── 현재 레벨의 테이블 데이터를 가져오는 헬퍼 ──────────────────────────
-    /// <summary>현재 레벨에서 강화 시도 시 적용될 데이터. 최대 레벨이면 null.</summary>
+    // ── 아이템 효과 상태 ────────────────────────────────────────────────────
+    // 확률 증가권: 다음 강화 1회에 한해 대성공 확률을 추가합니다.
+    private float bonusGreatSuccessRate = 1f;
+
+    // 파괴 방지권 적용 여부를 캐싱하는 ItemData 참조
+    [Header("파괴 방지권 ItemData")]
+    [Tooltip("파괴 방지권 ScriptableObject를 연결하세요. 자동 소모 감지에 사용됩니다.")]
+    [SerializeField] private ItemData protectionScrollData;
+
+    // ── 헬퍼 ────────────────────────────────────────────────────────────────
     private EnhanceLevelData? CurrentData =>
-        CurrentLevel < MAX_LEVEL ? Table[CurrentLevel - 1] : null;
+        CurrentLevel < MAX_LEVEL ? enhanceTable[CurrentLevel - 1] : null;
 
     public float CurrentSuccessRate => CurrentData?.SuccessRate ?? 0f;
     public int CurrentEnhanceCost => CurrentData?.EnhanceCost ?? 0;
-    public int CurrentSellPrice => CurrentData?.SellPrice ?? Table[^1].SellPrice;
+    public int CurrentSellPrice => CurrentData?.SellPrice ?? enhanceTable[^1].SellPrice;
+    public float BonusGreatSuccessRate => bonusGreatSuccessRate;
 
     private void Start()
     {
-#if UNITY_EDITOR
-        btnDebug.SetActive(true);
-#else
-        btnDebug.SetActive(false);
-#endif
         sellConfirmUI.SetActive(false);
-        enhanceConfirmUI.SetActive(false);
-        levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
+        RefreshDisplay();
     }
 
     // ── 강화 버튼 ───────────────────────────────────────────────────────────
-
     public void OnClickUpgrade()
     {
-        if (CurrentLevel >= MIN_ENHANCE_POPUP_LEVEL)
-            enhanceConfirmUI.SetActive(true);
-        else
-            OnClickUpgradeConfirm();
-    }
-
-    // ── 강화 확정 ───────────────────────────────────────────────────────────
-
-    public void OnClickUpgradeConfirm()
-    {
-        // 최대 레벨 도달 시 강화 불가
         if (CurrentLevel >= MAX_LEVEL)
         {
             Debug.Log("[강화] 최대 레벨입니다.");
             return;
         }
-
-        // 강화 비용 차감 시도
         if (!GameDataManager.SpendMoney(CurrentEnhanceCost))
         {
-            // TODO: 재화 부족 UI 표시
+            Debug.Log($"[강화] 재화 부족. 필요: {CurrentEnhanceCost}");
             return;
         }
 
         float roll = Random.Range(0f, 100f);
 
-        if (roll <= buffEnhanceRate)
+        // 1순위: 대성공 판정 (확률 증가권 적용)
+        if (bonusGreatSuccessRate > 0f && roll <= bonusGreatSuccessRate)
         {
-            CurrentLevel += 2;
-            Debug.Log($"[강화 대성공] Lv.{CurrentLevel - 2} → Lv.{CurrentLevel}");
+            OnGreatSuccess();
         }
+        // 2순위: 일반 성공 판정
         else if (roll <= CurrentSuccessRate)
         {
             OnEnhanceSuccess();
         }
+        // 3순위: 실패
         else
         {
             OnEnhanceFail();
         }
 
-        levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
-        enhanceConfirmUI.SetActive(false);
+        // 확률 증가권 효과는 1회 사용 후 초기화
+        bonusGreatSuccessRate = 0f;
+
+        RefreshDisplay();
     }
 
-    // ── 강화 취소 ───────────────────────────────────────────────────────────
-    public void OnClickUpgradeCancel()
+    // ── 강화 결과 처리 ───────────────────────────────────────────────────────
+    private void OnGreatSuccess()
     {
-        enhanceConfirmUI.SetActive(false);
+        int gainedLevels = Mathf.Min(2, MAX_LEVEL - CurrentLevel); // 최대 레벨 초과 방지
+        CurrentLevel += gainedLevels;
+        Debug.Log($"[대성공!] → Lv.{CurrentLevel} (+{gainedLevels})");
     }
 
-    // ── 강화 성공 ───────────────────────────────────────────────────────────
     private void OnEnhanceSuccess()
     {
         CurrentLevel++;
         Debug.Log($"[강화 성공] → Lv.{CurrentLevel}");
     }
 
-    // ── 강화 실패 ───────────────────────────────────────────────────────────
     private void OnEnhanceFail()
     {
         int failedLevel = CurrentLevel;
+
+        // 파괴 방지권 보유 여부 확인
+        if (protectionScrollData != null &&
+            ItemManager.Instance.GetCount(protectionScrollData) > 0)
+        {
+            ItemManager.Instance.RemoveItem(protectionScrollData, 1);
+            Debug.Log($"[파괴 방지권 발동] Lv.{failedLevel} 강화 실패 무효화! (잔여: {ItemManager.Instance.GetCount(protectionScrollData)}개)");
+            return; // 레벨 유지, 초기화 없음
+        }
+
+        // 방지권 없을 때 일반 실패 처리
         Debug.Log($"[강화 실패] Lv.{failedLevel} → Lv.1");
-
-        // 실패 레벨에 해당하는 드랍 아이템이 있는지 확인 후 지급
         TryDropItem(failedLevel);
-
         CurrentLevel = 1;
     }
 
@@ -149,21 +141,47 @@ public class EnhanceManager : MonoBehaviour
     private void TryDropItem(int failedLevel)
     {
         FailDropData? bestDrop = null;
-
         foreach (var drop in dropTable)
         {
-            if (failedLevel >= drop.RequiredLevel)
-            {
-                if (bestDrop == null || drop.RequiredLevel > bestDrop.Value.RequiredLevel)
-                    bestDrop = drop;
-            }
+            if (failedLevel >= drop.RequiredLevel &&
+                (bestDrop == null || drop.RequiredLevel > bestDrop.Value.RequiredLevel))
+                bestDrop = drop;
         }
-
         if (bestDrop.HasValue && bestDrop.Value.DropItem != null)
-        {
-            // ItemManager를 통해 인벤토리에 추가
             ItemManager.Instance.AddItem(bestDrop.Value.DropItem, bestDrop.Value.DropAmount);
+    }
+
+    // ── 아이템 효과 API (ItemManager에서 호출) ───────────────────────────────
+
+    /// <summary>확률 증가권: 다음 강화 1회에 대성공 확률을 추가합니다.</summary>
+    public void ApplyProbabilityBoost(int boostAmount)
+    {
+        bonusGreatSuccessRate += boostAmount;
+        Debug.Log($"[확률 증가권] 다음 강화 대성공 확률 +{boostAmount}% (현재: {bonusGreatSuccessRate}%)");
+        RefreshDisplay();
+    }
+
+    /// <summary>즉시 성장권: 지정 레벨로 즉시 이동합니다. (10 또는 20)</summary>
+    public void ApplyInstantGrowth(int targetLevel)
+    {
+        if (targetLevel <= 0 || targetLevel > MAX_LEVEL)
+        {
+            Debug.LogWarning($"[즉시 성장권] 유효하지 않은 목표 레벨: {targetLevel}");
+            return;
         }
+        int prevLevel = CurrentLevel;
+        CurrentLevel = targetLevel;
+        Debug.Log($"[즉시 성장권] Lv.{prevLevel} → Lv.{CurrentLevel}");
+        RefreshDisplay();
+    }
+
+    /// <summary>룰렛권: 1~25 랜덤 레벨로 변경합니다.</summary>
+    public void ApplyRoulette()
+    {
+        int prevLevel = CurrentLevel;
+        CurrentLevel = Random.Range(1, MAX_LEVEL + 1);
+        Debug.Log($"[룰렛권] Lv.{prevLevel} → Lv.{CurrentLevel} (랜덤)");
+        RefreshDisplay();
     }
 
     // ── 판매 ────────────────────────────────────────────────────────────────
@@ -175,12 +193,14 @@ public class EnhanceManager : MonoBehaviour
         GameDataManager.AddMoney(CurrentSellPrice);
         Debug.Log($"[판매] 판매가: {CurrentSellPrice}");
         CurrentLevel = 1;
+        bonusGreatSuccessRate = 0f;
         sellConfirmUI.SetActive(false);
         RefreshDisplay();
     }
 
     private void RefreshDisplay() =>
         levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
+
     // ── 디버그 ───────────────────────────────
     public void OnClickDebugBtn()
     {

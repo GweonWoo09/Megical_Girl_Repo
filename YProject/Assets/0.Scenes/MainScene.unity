@@ -175,18 +175,23 @@ MonoBehaviour:
     Price: 10000
     LinkedItem: {fileID: 11400000, guid: f16dde29a3801074b802d749c4c64dea, type: 2}
   - ItemName: "\uD655\uB960 \uC99D\uAC00\uAD8C"
-    ItemDescription: 
+    ItemDescription: "\uC774\uBC88 \uAC15\uD654\uC5D0 \uB300\uC131\uACF5\uC774 \uB098\uC62C
+      \uD655\uB960\uC774 \uB192\uC544\uC9D1\uB2C8\uB2E4."
     Price: 20000
     LinkedItem: {fileID: 11400000, guid: a3db71f61de7a27478639ad869ff7ff0, type: 2}
-  - ItemName: "\uC989\uC2DC \uAC15\uD654\uAD8C"
-    ItemDescription: 
+  - ItemName: "+10 \uACE8\uB4DC"
+    ItemDescription: "1\uCD08 \uB9C8\uB2E4 10\uACE8\uB4DC \uC529 \uC5BB\uC2B5\uB2C8\uB2E4."
+    Price: 20000
+    LinkedItem: {fileID: 11400000, guid: 515ab128dbf01ab4797749faa4b8a0f4, type: 2}
+  - ItemName: "\uC989\uC2DC \uC131\uC7A5\uAD8C"
+    ItemDescription: "\uC0AC\uC6A9\uC2DC \uC989\uC2DC 10\uB808\uBCA8\uB85C \uC131\uC7A5\uD569\uB2C8\uB2E4."
     Price: 100000
     LinkedItem: {fileID: 11400000, guid: c1895ec0f8052964da36418bcab3ab07, type: 2}
   - ItemName: "\uB8F0\uB81B"
     ItemDescription: "1 \uBD80\uD130 25 \uAE4C\uC9C0\uC758 \uB808\uBCA8\uC774 \uBB34\uC791\uC704\uB85C
       \uC815\uD574\uC9D1\uB2C8\uB2E4."
     Price: 1000000
-    LinkedItem: {fileID: 11400000, guid: c1895ec0f8052964da36418bcab3ab07, type: 2}
+    LinkedItem: {fileID: 11400000, guid: 1960d17ef5f611541a720659c546abec, type: 2}
 --- !u!1 &79233588
 GameObject:
   m_ObjectHideFlags: 0
@@ -746,7 +751,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uBC29\uC9C0\uAD8C"
+  m_text: "\uBC29\uC9C0\uAD8C: 00"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 71f74ee8d2fddbc4da98c9cae145c1f2, type: 2}
   m_sharedMaterial: {fileID: 2992681553702240955, guid: 71f74ee8d2fddbc4da98c9cae145c1f2, type: 2}
@@ -2501,8 +2506,7 @@ MonoBehaviour:
     DropAmount: 1
   levelManager: {fileID: 972184247}
   sellConfirmUI: {fileID: 139107222}
-  enhanceConfirmUI: {fileID: 1531929253}
-  btnDebug: {fileID: 1166917725}
+  protectionScrollData: {fileID: 11400000, guid: f16dde29a3801074b802d749c4c64dea, type: 2}
 --- !u!1 &393522686
 GameObject:
   m_ObjectHideFlags: 0
@@ -4849,6 +4853,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 656f5e41551971847a8a4402d3068a86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemManager
+  enhanceManager: {fileID: 384510586}
 --- !u!1 &962620801
 GameObject:
   m_ObjectHideFlags: 0
@@ -5937,7 +5942,7 @@ GameObject:
   - component: {fileID: 1284976260}
   - component: {fileID: 1284976259}
   m_Layer: 5
-  m_Name: Image
+  m_Name: ItemUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

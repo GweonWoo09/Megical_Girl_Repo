@@ -2,73 +2,92 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// 인벤토리 데이터를 관리하는 싱글턴입니다.
-/// ShopManager, EnhanceManager에서 아이템을 받아 보관하고
-/// 변경이 생길 때마다 이벤트로 InventoryUI에 알립니다.
-/// </summary>
 public class ItemManager : MonoBehaviour
 {
     public static ItemManager Instance { get; private set; }
 
-    // 인벤토리 변경 시 InventoryUI가 자동으로 갱신됩니다.
     public static event Action OnInventoryChanged;
 
-    // 아이템 데이터 → 보유 수량 딕셔너리
     private readonly Dictionary<ItemData, int> inventory = new();
-
-    // 외부에서 읽기 전용으로 인벤토리 접근
     public IReadOnlyDictionary<ItemData, int> Inventory => inventory;
+
+    // EnhanceManager 참조 (아이템 효과 적용용)
+    [SerializeField] private EnhanceManager enhanceManager;
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
 
-    // ── 아이템 추가 ─────────────────────────────────────────────────────────
-    /// <summary>인벤토리에 아이템을 추가합니다.</summary>
+    // ── 추가 / 제거 ─────────────────────────────────────────────────────────
     public void AddItem(ItemData item, int amount = 1)
     {
-        if (item == null)
-        {
-            Debug.LogWarning("[ItemManager] null 아이템은 추가할 수 없습니다.");
-            return;
-        }
-
-        if (inventory.ContainsKey(item))
-            inventory[item] += amount;
-        else
-            inventory[item] = amount;
-
+        if (item == null) return;
+        inventory[item] = inventory.TryGetValue(item, out int cur) ? cur + amount : amount;
         Debug.Log($"[인벤토리] '{item.itemName}' x{amount} 획득 (보유: {inventory[item]})");
         OnInventoryChanged?.Invoke();
     }
 
-    // ── 아이템 제거 ─────────────────────────────────────────────────────────
-    /// <summary>인벤토리에서 아이템을 제거합니다. 수량 부족 시 false 반환.</summary>
     public bool RemoveItem(ItemData item, int amount = 1)
     {
-        if (item == null || !inventory.ContainsKey(item) || inventory[item] < amount)
+        if (item == null || !inventory.TryGetValue(item, out int cur) || cur < amount)
         {
-            Debug.LogWarning($"[ItemManager] '{item?.itemName}' 제거 실패: 수량 부족");
+            Debug.LogWarning($"[인벤토리] '{item?.itemName}' 제거 실패: 수량 부족");
             return false;
         }
-
-        inventory[item] -= amount;
-
-        if (inventory[item] <= 0)
-            inventory.Remove(item); // 수량 0이면 목록에서 제거
-
+        inventory[item] = cur - amount;
+        if (inventory[item] <= 0) inventory.Remove(item);
         OnInventoryChanged?.Invoke();
         return true;
     }
 
-    // ── 보유 수량 조회 ──────────────────────────────────────────────────────
     public int GetCount(ItemData item) =>
-        inventory.TryGetValue(item, out int count) ? count : 0;
+        inventory.TryGetValue(item, out int c) ? c : 0;
+
+    // ── 아이템 사용 (능동 효과만) ────────────────────────────────────────────
+    /// <summary>
+    /// InventoryItemUI의 '사용' 버튼에서 호출됩니다.
+    /// 파괴 방지권은 피동 효과이므로 사용 버튼에서 호출하지 않습니다.
+    /// </summary>
+    public void UseItem(ItemData item)
+    {
+        if (item == null || !inventory.ContainsKey(item))
+        {
+            Debug.LogWarning("[인벤토리] 사용할 아이템이 없습니다.");
+            return;
+        }
+        if (enhanceManager == null)
+        {
+            Debug.LogError("[ItemManager] EnhanceManager가 연결되지 않았습니다!");
+            return;
+        }
+
+        switch (item.effectType)
+        {
+            case ItemEffectType.ProtectionScroll:
+                Debug.Log("[아이템] 파괴 방지권은 강화 실패 시 자동으로 소모됩니다.");
+                return; // 수동 사용 불가
+
+            case ItemEffectType.ProbabilityBoost:
+                enhanceManager.ApplyProbabilityBoost(item.effectValue);
+                break;
+
+            case ItemEffectType.InstantGrowth:
+                enhanceManager.ApplyInstantGrowth(item.effectValue);
+                break;
+
+            case ItemEffectType.Roulette:
+                enhanceManager.ApplyRoulette();
+                break;
+
+            default:
+                Debug.LogWarning($"[아이템] '{item.itemName}'에 정의된 효과가 없습니다.");
+                return;
+        }
+
+        // 효과 적용 성공 시 아이템 1개 소모
+        RemoveItem(item, 1);
+        Debug.Log($"[아이템] '{item.itemName}' 사용 완료.");
+    }
 }

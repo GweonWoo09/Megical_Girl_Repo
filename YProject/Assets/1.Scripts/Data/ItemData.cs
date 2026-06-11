@@ -1,8 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// 아이템 원본 정보를 담는 ScriptableObject
-/// Project 창에서 우클릭 → Create → Items → ItemData 로 생성
+/// 아이템 원본 정보 ScriptableObject.
+/// effectType으로 아이템 효과를 구분하고,
+/// effectValue로 효과 수치(즉시 성장 목표 레벨, 확률 증가량 등)를 지정합니다.
 /// </summary>
 [CreateAssetMenu(fileName = "NewItem", menuName = "Items/ItemData")]
 public class ItemData : ScriptableObject
@@ -12,13 +13,22 @@ public class ItemData : ScriptableObject
     [TextArea] public string description;
     public Sprite icon;
 
-    [Header("분류")]
-    public ItemType itemType;
+    [Header("아이템 효과")]
+    public ItemEffectType effectType;
+
+    [Tooltip(
+        "파괴 방지권: 사용 안 함\n" +
+        "확률 증가권: 대성공 확률 증가량 (%)\n" +
+        "즉시 성장권: 이동할 목표 레벨 (10 또는 20)\n" +
+        "룰렛권:     사용 안 함")]
+    public int effectValue;
 }
 
-public enum ItemType
+public enum ItemEffectType
 {
-    Material,   // 재료 (마법 파편, 결정 등)
-    Consumable, // 소비 아이템 (방지권 등)
-    Equipment,  // 장비
+    None,
+    ProtectionScroll,  // 파괴 방지권 (강화 실패 자동 소모, 피동)
+    ProbabilityBoost,  // 확률 증가권 (사용 → 다음 강화에 대성공 확률 증가)
+    InstantGrowth,     // 즉시 성장권 (사용 → effectValue 레벨로 즉시 이동)
+    Roulette,          // 룰렛권     (사용 → 1~25 랜덤 레벨)
 }
