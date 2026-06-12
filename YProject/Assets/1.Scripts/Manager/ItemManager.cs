@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public class ItemManager : MonoBehaviour
 {
+    // 싱글턴 인스턴스
     public static ItemManager Instance { get; private set; }
 
     public static event Action OnInventoryChanged;

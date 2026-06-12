@@ -54,7 +54,7 @@ public class ShopUI : MonoBehaviour
 
     private void OnItemPurchased(ShopItemData item)
     {
-        if (!GameDataManager.SpendMoney(item.Price))
+        if (!GameDataManager.Instance.SpendMoney(item.Price))
         {
             Debug.Log($"[상점] 재화 부족. 필요: {item.Price}G");
             return;

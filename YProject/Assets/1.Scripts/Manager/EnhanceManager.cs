@@ -74,7 +74,7 @@ public class EnhanceManager : MonoBehaviour
             Debug.Log("[강화] 최대 레벨입니다.");
             return;
         }
-        if (!GameDataManager.SpendMoney(CurrentEnhanceCost))
+        if (!GameDataManager.Instance.SpendMoney(CurrentEnhanceCost))
         {
             Debug.Log($"[강화] 재화 부족. 필요: {CurrentEnhanceCost}");
             return;
@@ -190,7 +190,7 @@ public class EnhanceManager : MonoBehaviour
 
     public void OnClickSellConfirm()
     {
-        GameDataManager.AddMoney(CurrentSellPrice);
+        GameDataManager.Instance.AddMoney(CurrentSellPrice);
         Debug.Log($"[판매] 판매가: {CurrentSellPrice}");
         CurrentLevel = 1;
         bonusGreatSuccessRate = 0f;

@@ -38,10 +38,10 @@ public class LevelManager : MonoBehaviour
             enhanceCostText.text = isMax ? "-" : $"강화 비용: {enhanceCost:N0}G";
 
         // 가격 갱신
-        GameDataManager.SetPrice(sellPrice);
+        GameDataManager.Instance.SetPrice(sellPrice);
     }
 
-    private static string GetCharacterName(int level)
+    private string GetCharacterName(int level)
     {
         // 1~5 레벨은 고유 이름, 이후는 자동 생성
         return level switch
