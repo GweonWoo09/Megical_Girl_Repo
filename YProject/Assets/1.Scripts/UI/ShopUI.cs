@@ -54,7 +54,7 @@ public class ShopUI : MonoBehaviour
 
     private void OnItemPurchased(ShopItemData item)
     {
-        if (!GameDataManager.Instance.SpendMoney(item.Price))
+        if (!GameDataManager.gdmInstance.SpendMoney(item.Price))
         {
             Debug.Log($"[상점] 재화 부족. 필요: {item.Price}G");
             return;
@@ -64,7 +64,7 @@ public class ShopUI : MonoBehaviour
 
         // LinkedItem이 연결되어 있으면 인벤토리에 추가
         if (item.LinkedItem != null)
-            ItemManager.Instance.AddItem(item.LinkedItem);
+            ItemManager.imInstance.AddItem(item.LinkedItem);
         else
             Debug.LogWarning($"[상점] '{item.ItemName}'에 LinkedItem이 연결되지 않았습니다.");
     }

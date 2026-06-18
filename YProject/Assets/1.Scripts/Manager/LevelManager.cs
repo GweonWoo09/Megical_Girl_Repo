@@ -10,17 +10,18 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI levelText;
     [SerializeField] private TextMeshProUGUI nameText;
     [SerializeField] private TextMeshProUGUI successRateText;  // 성공 확률 표시
+    [SerializeField] private TextMeshProUGUI greatSuccessRateText; // 대성공 확률 표시
     [SerializeField] private TextMeshProUGUI enhanceCostText;  // 강화 비용 표시
 
     private void Start()
     {
-        UpdateDisplay(1, 100f, 50, 0);
+        UpdateDisplay(1, 10f, 100f, 50, 0);
     }
 
     /// <summary>
     /// EnhanceManager가 레벨 변화 시 호출합니다.
     /// </summary>
-    public void UpdateDisplay(int level, float successRate, int enhanceCost, int sellPrice)
+    public void UpdateDisplay(int level, float greatSuccessRate, float successRate, int enhanceCost, int sellPrice)
     {
         if (levelText != null)
             levelText.text = $"Level: {level}";
@@ -31,6 +32,9 @@ public class LevelManager : MonoBehaviour
         // 최대 레벨이면 "MAX" 표시
         bool isMax = level >= EnhanceManager.MAX_LEVEL;
 
+        if (greatSuccessRateText != null)
+            greatSuccessRateText.text = isMax ? "-" : $"대성공 확률: {greatSuccessRate}%";
+
         if (successRateText != null)
             successRateText.text = isMax ? "MAX" : $"성공 확률: {successRate}%";
 
@@ -38,7 +42,7 @@ public class LevelManager : MonoBehaviour
             enhanceCostText.text = isMax ? "-" : $"강화 비용: {enhanceCost:N0}G";
 
         // 가격 갱신
-        GameDataManager.Instance.SetPrice(sellPrice);
+        GameDataManager.gdmInstance.SetPrice(sellPrice);
     }
 
     private string GetCharacterName(int level)

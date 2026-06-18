@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class GameDataManager : MonoBehaviour
 {
-    public static GameDataManager Instance { get; private set; }
+    public static GameDataManager gdmInstance { get; private set; }
 
     // --- 이벤트 ---
     // UIManager 등 다른 스크립트가 구독하면 값이 바뀔 때 자동으로 알림을 받습니다.
@@ -20,12 +20,12 @@ public class GameDataManager : MonoBehaviour
     private void Awake()
     {
         // 싱글턴 설정
-        if (Instance != null && Instance != this)
+        if (gdmInstance != null && gdmInstance != this)
         {
             Destroy(gameObject);
             return;
         }
-        Instance = this;
+        gdmInstance = this;
     }
 
     private void Start()

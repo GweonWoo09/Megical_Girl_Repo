@@ -55,7 +55,7 @@ public class InventoryUI : MonoBehaviour
     // ── 스크롤뷰 갱신 ───────────────────────────────────────────────────────
     private void RefreshScrollView()
     {
-        var inventory = ItemManager.Instance.Inventory;
+        var inventory = ItemManager.imInstance.Inventory;
         int index = 0;
 
         foreach (var (item, count) in inventory)

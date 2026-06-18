@@ -6,7 +6,7 @@ using static UnityEditor.Progress;
 public class ItemManager : MonoBehaviour
 {
     // 싱글턴 인스턴스
-    public static ItemManager Instance { get; private set; }
+    public static ItemManager imInstance { get; private set; }
 
     public static event Action OnInventoryChanged;
 
@@ -18,8 +18,8 @@ public class ItemManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
+        if (imInstance != null && imInstance != this) { Destroy(gameObject); return; }
+        imInstance = this;
     }
 
     // ── 추가 / 제거 ─────────────────────────────────────────────────────────

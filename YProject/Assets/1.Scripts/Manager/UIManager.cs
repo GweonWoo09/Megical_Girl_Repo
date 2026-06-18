@@ -3,7 +3,7 @@ using TMPro;
 
 public class UIManager : MonoBehaviour
 {
-    public static UIManager Instance { get; private set; }
+    public static UIManager uimInstance { get; private set; }
 
     [Header("재화 / 가격")]
     [SerializeField] private TextMeshProUGUI moneyText;
@@ -15,28 +15,28 @@ public class UIManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
+        if (uimInstance != null && uimInstance != this) { Destroy(gameObject); return; }
+        uimInstance = this;
     }
 
     private void OnEnable()
     {
-        GameDataManager.Instance.OnMoneyChanged += RefreshMoneyUI;
-        GameDataManager.Instance.OnPriceChanged += RefreshPriceUI;
+        GameDataManager.gdmInstance.OnMoneyChanged += RefreshMoneyUI;
+        GameDataManager.gdmInstance.OnPriceChanged += RefreshPriceUI;
         ItemManager.OnInventoryChanged += RefreshProtectionCountUI;
     }
 
     private void OnDisable()
     {
-        GameDataManager.Instance.OnMoneyChanged -= RefreshMoneyUI;
-        GameDataManager.Instance.OnPriceChanged -= RefreshPriceUI;
+        GameDataManager.gdmInstance.OnMoneyChanged -= RefreshMoneyUI;
+        GameDataManager.gdmInstance.OnPriceChanged -= RefreshPriceUI;
         ItemManager.OnInventoryChanged -= RefreshProtectionCountUI;
     }
 
     private void Start()
     {
-        RefreshMoneyUI(GameDataManager.Instance.Money);
-        RefreshPriceUI(GameDataManager.Instance.Price);
+        RefreshMoneyUI(GameDataManager.gdmInstance.Money);
+        RefreshPriceUI(GameDataManager.gdmInstance.Price);
         RefreshProtectionCountUI();
     }
 
@@ -56,8 +56,8 @@ public class UIManager : MonoBehaviour
     {
         if (protectionCountText == null) return;
 
-        int count = (protectionScrollData != null && ItemManager.Instance != null)
-            ? ItemManager.Instance.GetCount(protectionScrollData)
+        int count = (protectionScrollData != null && ItemManager.imInstance != null)
+            ? ItemManager.imInstance.GetCount(protectionScrollData)
             : 0;
 
         // 보유 수량에 따라 텍스트와 색상을 다르게 표시합니다.

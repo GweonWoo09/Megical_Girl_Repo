@@ -31,6 +31,24 @@ public class EnhanceManager : MonoBehaviour
         new() { FromLevel = 24, SuccessRate =   3f, EnhanceCost = 35000, SellPrice = 2500000 },
     };
 
+    // ── 대성공 기본 확률표 ───────────────────────────────────────────────────
+    // 레벨 구간별 기본 대성공 확률입니다.
+    // MinLevel 이상 MaxLevel 이하일 때 BaseRate가 적용됩니다.
+    private static readonly GreatSuccessRateData[] GreatSuccessTable =
+    {
+        new() { MinLevel =  1, MaxLevel =  5, BaseRate = 10f },
+        new() { MinLevel =  6, MaxLevel = 10, BaseRate =  5f },
+        new() { MinLevel = 11, MaxLevel = 15, BaseRate =  3f },
+        new() { MinLevel = 16, MaxLevel = 25, BaseRate =  1f },
+    };
+
+    private static readonly LastChanceRateData[] LastChanceTable =
+    {
+        new() { MinLevel =  1, MaxLevel =  10, BaseRate = 10f },
+        new() { MinLevel =  11, MaxLevel = 20, BaseRate = 2f },
+        new() { MinLevel = 21, MaxLevel = 24, BaseRate = 3f },
+    };
+
     // ── 실패 드랍 테이블 ────────────────────────────────────────────────────
     [Header("실패 드랍 테이블")]
     [SerializeField] private FailDropData[] dropTable;
@@ -44,7 +62,7 @@ public class EnhanceManager : MonoBehaviour
 
     // ── 아이템 효과 상태 ────────────────────────────────────────────────────
     // 확률 증가권: 다음 강화 1회에 한해 대성공 확률을 추가합니다.
-    private float bonusGreatSuccessRate = 1f;
+    private float bonusGreatSuccessRate = 0f;
 
     // 파괴 방지권 적용 여부를 캐싱하는 ItemData 참조
     [Header("파괴 방지권 ItemData")]
@@ -60,6 +78,40 @@ public class EnhanceManager : MonoBehaviour
     public int CurrentSellPrice => CurrentData?.SellPrice ?? enhanceTable[^1].SellPrice;
     public float BonusGreatSuccessRate => bonusGreatSuccessRate;
 
+    /// <summary>
+    /// 현재 레벨의 기본 대성공 확률을 반환합니다.
+    /// </summary>
+    public float BaseGreatSuccessRate
+    {
+        get
+        {
+            foreach (var entry in GreatSuccessTable)
+            {
+                if (CurrentLevel >= entry.MinLevel && CurrentLevel <= entry.MaxLevel)
+                    return entry.BaseRate;
+            }
+            return 0f;
+        }
+    }
+
+    public float LastChanceSuccessRate
+    {
+        get
+        {
+            foreach (var entry in LastChanceTable)
+            {
+                if (CurrentLevel >= entry.MinLevel && CurrentLevel <= entry.MaxLevel)
+                    return entry.BaseRate;
+            }
+            return 0f;
+        }
+    }
+
+    /// <summary>
+    /// 실제 적용되는 최종 대성공 확률 (기본 + 확률 증가권 보너스)
+    /// </summary>
+    public float TotalGreatSuccessRate => BaseGreatSuccessRate + bonusGreatSuccessRate;
+
     private void Start()
     {
         sellConfirmUI.SetActive(false);
@@ -74,16 +126,17 @@ public class EnhanceManager : MonoBehaviour
             Debug.Log("[강화] 최대 레벨입니다.");
             return;
         }
-        if (!GameDataManager.Instance.SpendMoney(CurrentEnhanceCost))
+        if (!GameDataManager.gdmInstance.SpendMoney(CurrentEnhanceCost))
         {
             Debug.Log($"[강화] 재화 부족. 필요: {CurrentEnhanceCost}");
             return;
         }
 
         float roll = Random.Range(0f, 100f);
+        float totalGreatRate = TotalGreatSuccessRate;
 
-        // 1순위: 대성공 판정 (확률 증가권 적용)
-        if (bonusGreatSuccessRate > 0f && roll <= bonusGreatSuccessRate)
+        // 1순위: 대성공 판정
+        if (roll <= totalGreatRate)
         {
             OnGreatSuccess();
         }
@@ -121,13 +174,20 @@ public class EnhanceManager : MonoBehaviour
     private void OnEnhanceFail()
     {
         int failedLevel = CurrentLevel;
+        float chanceRoll = Random.Range(0f, 100f);
+
+        if (chanceRoll <= LastChanceSuccessRate)
+        {
+            Debug.Log($"[파괴 회피] Lv.{failedLevel} 강화 실패 무효화!");
+            return; // 레벨 유지, 초기화 없음
+        }
 
         // 파괴 방지권 보유 여부 확인
-        if (protectionScrollData != null &&
-            ItemManager.Instance.GetCount(protectionScrollData) > 0)
+        else if (protectionScrollData != null &&
+            ItemManager.imInstance.GetCount(protectionScrollData) > 0)
         {
-            ItemManager.Instance.RemoveItem(protectionScrollData, 1);
-            Debug.Log($"[파괴 방지권 발동] Lv.{failedLevel} 강화 실패 무효화! (잔여: {ItemManager.Instance.GetCount(protectionScrollData)}개)");
+            ItemManager.imInstance.RemoveItem(protectionScrollData, 1);
+            Debug.Log($"[파괴 방지권 발동] Lv.{failedLevel} 강화 실패 무효화! (잔여: {ItemManager.imInstance.GetCount(protectionScrollData)}개)");
             return; // 레벨 유지, 초기화 없음
         }
 
@@ -148,7 +208,7 @@ public class EnhanceManager : MonoBehaviour
                 bestDrop = drop;
         }
         if (bestDrop.HasValue && bestDrop.Value.DropItem != null)
-            ItemManager.Instance.AddItem(bestDrop.Value.DropItem, bestDrop.Value.DropAmount);
+            ItemManager.imInstance.AddItem(bestDrop.Value.DropItem, bestDrop.Value.DropAmount);
     }
 
     // ── 아이템 효과 API (ItemManager에서 호출) ───────────────────────────────
@@ -190,7 +250,7 @@ public class EnhanceManager : MonoBehaviour
 
     public void OnClickSellConfirm()
     {
-        GameDataManager.Instance.AddMoney(CurrentSellPrice);
+        GameDataManager.gdmInstance.AddMoney(CurrentSellPrice);
         Debug.Log($"[판매] 판매가: {CurrentSellPrice}");
         CurrentLevel = 1;
         bonusGreatSuccessRate = 0f;
@@ -199,13 +259,12 @@ public class EnhanceManager : MonoBehaviour
     }
 
     private void RefreshDisplay() =>
-        levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
+        levelManager.UpdateDisplay(CurrentLevel, TotalGreatSuccessRate, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
 
     // ── 디버그 ───────────────────────────────
     public void OnClickDebugBtn()
     {
         CurrentLevel++;
-        Debug.Log($"[강화 성공] Lv.{CurrentLevel - 1} → Lv.{CurrentLevel}");
-        levelManager.UpdateDisplay(CurrentLevel, CurrentSuccessRate, CurrentEnhanceCost, CurrentSellPrice);
+        RefreshDisplay();
     }
 }

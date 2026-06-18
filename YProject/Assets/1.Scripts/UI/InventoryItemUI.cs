@@ -42,6 +42,6 @@ public class InventoryItemUI : MonoBehaviour
     private void OnUseClicked()
     {
         if (currentItem != null)
-            ItemManager.Instance.UseItem(currentItem);
+            ItemManager.imInstance.UseItem(currentItem);
     }
 }
