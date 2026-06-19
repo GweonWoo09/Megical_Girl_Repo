@@ -8,7 +8,8 @@ public class ItemManager : MonoBehaviour
     // 싱글턴 인스턴스
     public static ItemManager imInstance { get; private set; }
 
-    public static event Action OnInventoryChanged;
+    public event Action OnInventoryChanged;
+    public event Action OnEarnMoneyChanged;
 
     private readonly Dictionary<ItemData, int> inventory = new();
     public IReadOnlyDictionary<ItemData, int> Inventory => inventory;
@@ -16,11 +17,24 @@ public class ItemManager : MonoBehaviour
     // EnhanceManager 참조 (아이템 효과 적용용)
     [SerializeField] private EnhanceManager enhanceManager;
 
+    // ── 재화 획득권 설정 ─────────────────────────────────────────────────────
+    [Header("재화 획득권 설정")]
+    private const float EARN_TICK_INTERVAL = 1f;  // 1초마다 실행
+    private const int EARN_AMOUNT_PER_LEVEL = 10; // 레벨(=보유 개수)당 10씩
+
     private void Awake()
     {
         if (imInstance != null && imInstance != this) { Destroy(gameObject); return; }
         imInstance = this;
     }
+
+
+    private void Start()
+    {
+        // 1초마다 TickEarnMoney를 반복 실행합니다.
+        InvokeRepeating(nameof(TickEarnMoney), EARN_TICK_INTERVAL, EARN_TICK_INTERVAL);
+    }
+
 
     // ── 추가 / 제거 ─────────────────────────────────────────────────────────
     public void AddItem(ItemData item, int amount = 1)
@@ -47,6 +61,31 @@ public class ItemManager : MonoBehaviour
     public int GetCount(ItemData item) =>
         inventory.TryGetValue(item, out int c) ? c : 0;
 
+    // ── 재화 획득권 틱 처리 ───────────────────────────────────────────────────
+    /// <summary>
+    /// 1초마다 호출됩니다. 보유한 모든 EarnMoney 타입 아이템의 개수를 합산해
+    /// (개수 × 10)만큼 재화를 자동으로 지급합니다.
+    /// 보유 개수가 곧 "레벨"로 취급되어, 개수가 많을수록 초당 획득량이 늘어납니다.
+    /// </summary>
+    private void TickEarnMoney()
+    {
+        int totalLevel = 0;
+
+        foreach (var pair in inventory)
+        {
+            if (pair.Key.effectType == ItemEffectType.EarnMoney)
+                totalLevel += pair.Value; // 보유 개수를 레벨로 합산
+        }
+
+        if (totalLevel <= 0) return;
+
+        int income = totalLevel * EARN_AMOUNT_PER_LEVEL;
+        GameDataManager.gdmInstance.AddMoney(income);
+        Debug.Log($"[재화 획득권] 보유 레벨 {totalLevel} → 초당 {income}G 획득");
+
+        OnEarnMoneyChanged?.Invoke();
+    }
+
     // ── 아이템 사용 (능동 효과만) ────────────────────────────────────────────
     /// <summary>
     /// InventoryItemUI의 '사용' 버튼에서 호출됩니다.
@@ -69,6 +108,10 @@ public class ItemManager : MonoBehaviour
         {
             case ItemEffectType.ProtectionScroll:
                 Debug.Log("[아이템] 파괴 방지권은 강화 실패 시 자동으로 소모됩니다.");
+                return; // 수동 사용 불가
+
+            case ItemEffectType.EarnMoney:
+                Debug.Log("[아이템] 재화 획득권은 보유만 하면 자동으로 작동합니다.");
                 return; // 수동 사용 불가
 
             case ItemEffectType.ProbabilityBoost:

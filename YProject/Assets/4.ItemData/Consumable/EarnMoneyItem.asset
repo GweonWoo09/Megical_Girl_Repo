@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a5994e9b6a951949b949a58474c8ada, type: 3}
   m_Name: EarnMoneyItem
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: "+10 \uACE8\uB4DC"
+  itemName: "\uC7AC\uD654 \uD68D\uB4DD"
   description: "1\uCD08 \uB9C8\uB2E4 10\uACE8\uB4DC \uC529 \uC5BB\uC2B5\uB2C8\uB2E4."
   icon: {fileID: 0}
-  itemType: 1
+  effectType: 3
+  effectValue: 0

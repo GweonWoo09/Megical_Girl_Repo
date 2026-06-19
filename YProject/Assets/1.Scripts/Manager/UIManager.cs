@@ -13,6 +13,10 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI protectionCountText;
     [SerializeField] private ItemData protectionScrollData;
 
+    [Header("재화 획득권")]
+    [SerializeField] private TextMeshProUGUI earnMoneyText;
+    [SerializeField] private ItemData earnMoneyData;
+
     private void Awake()
     {
         if (uimInstance != null && uimInstance != this) { Destroy(gameObject); return; }
@@ -23,14 +27,16 @@ public class UIManager : MonoBehaviour
     {
         GameDataManager.gdmInstance.OnMoneyChanged += RefreshMoneyUI;
         GameDataManager.gdmInstance.OnPriceChanged += RefreshPriceUI;
-        ItemManager.OnInventoryChanged += RefreshProtectionCountUI;
+        ItemManager.imInstance.OnInventoryChanged += RefreshProtectionCountUI;
+        ItemManager.imInstance.OnEarnMoneyChanged += RefreshEarnMoneyUI;
     }
 
     private void OnDisable()
     {
         GameDataManager.gdmInstance.OnMoneyChanged -= RefreshMoneyUI;
         GameDataManager.gdmInstance.OnPriceChanged -= RefreshPriceUI;
-        ItemManager.OnInventoryChanged -= RefreshProtectionCountUI;
+        ItemManager.imInstance.OnInventoryChanged -= RefreshProtectionCountUI;
+        ItemManager.imInstance.OnEarnMoneyChanged -= RefreshEarnMoneyUI;
     }
 
     private void Start()
@@ -38,6 +44,7 @@ public class UIManager : MonoBehaviour
         RefreshMoneyUI(GameDataManager.gdmInstance.Money);
         RefreshPriceUI(GameDataManager.gdmInstance.Price);
         RefreshProtectionCountUI();
+        RefreshEarnMoneyUI();
     }
 
     private void RefreshMoneyUI(int money)
@@ -60,7 +67,17 @@ public class UIManager : MonoBehaviour
             ? ItemManager.imInstance.GetCount(protectionScrollData)
             : 0;
 
-        // 보유 수량에 따라 텍스트와 색상을 다르게 표시합니다.
         protectionCountText.text = $"방지권: {count}개";
+    }
+
+    private void RefreshEarnMoneyUI()
+    {
+        if (earnMoneyText == null) return;
+
+        int count = (earnMoneyData != null && ItemManager.imInstance != null)
+            ? ItemManager.imInstance.GetCount(earnMoneyData)
+            : 0;
+
+        earnMoneyText.text = $"{count}0/s";
     }
 }

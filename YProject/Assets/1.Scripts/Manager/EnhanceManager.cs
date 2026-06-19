@@ -42,6 +42,7 @@ public class EnhanceManager : MonoBehaviour
         new() { MinLevel = 16, MaxLevel = 25, BaseRate =  1f },
     };
 
+    // ── 파괴 회피 기본 확률표 ───────────────────────────────────────────────────
     private static readonly LastChanceRateData[] LastChanceTable =
     {
         new() { MinLevel =  1, MaxLevel =  10, BaseRate = 10f },
@@ -54,6 +55,7 @@ public class EnhanceManager : MonoBehaviour
     [SerializeField] private FailDropData[] dropTable;
 
     public const int MAX_LEVEL = 25;
+    public const int SELL_CONFILM_LEVEL = 15;
     public int CurrentLevel { get; private set; } = 1;
 
     [Header("참조")]
@@ -178,7 +180,7 @@ public class EnhanceManager : MonoBehaviour
 
         if (chanceRoll <= LastChanceSuccessRate)
         {
-            Debug.Log($"[파괴 회피] Lv.{failedLevel} 강화 실패 무효화!");
+            Debug.Log($"[파괴 회피] Lv.{failedLevel} 강화 실패 회피!");
             return; // 레벨 유지, 초기화 없음
         }
 
@@ -245,7 +247,13 @@ public class EnhanceManager : MonoBehaviour
     }
 
     // ── 판매 ────────────────────────────────────────────────────────────────
-    public void OnClickSell() => sellConfirmUI.SetActive(true);
+    public void OnClickSell()
+    {
+        if (CurrentLevel >= SELL_CONFILM_LEVEL)
+            sellConfirmUI.SetActive(true);
+        else
+            OnClickSellConfirm();
+    }
     public void OnClickSellCancel() => sellConfirmUI.SetActive(false);
 
     public void OnClickSellConfirm()

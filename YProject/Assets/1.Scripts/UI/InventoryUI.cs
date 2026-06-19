@@ -31,12 +31,14 @@ public class InventoryUI : MonoBehaviour
     private void OnEnable()
     {
         // 인벤토리가 바뀔 때마다 자동 갱신
-        ItemManager.OnInventoryChanged += RefreshScrollView;
+        ItemManager.imInstance.OnInventoryChanged += RefreshScrollView;
+        ItemManager.imInstance.OnEarnMoneyChanged += RefreshScrollView;
     }
 
     private void OnDisable()
     {
-        ItemManager.OnInventoryChanged -= RefreshScrollView;
+        ItemManager.imInstance.OnInventoryChanged -= RefreshScrollView;
+        ItemManager.imInstance.OnEarnMoneyChanged += RefreshScrollView;
     }
 
     private void Start()

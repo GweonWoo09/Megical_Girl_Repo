@@ -15,5 +15,5 @@ MonoBehaviour:
   itemName: "\uC989\uC2DC \uC131\uC7A5\uAD8C"
   description: "\uC0AC\uC6A9\uC2DC \uC989\uC2DC 10\uB808\uBCA8\uB85C \uC131\uC7A5\uD569\uB2C8\uB2E4."
   icon: {fileID: 0}
-  effectType: 3
+  effectType: 4
   effectValue: 10
